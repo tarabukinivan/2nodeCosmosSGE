@@ -137,7 +137,7 @@ sged tx staking create-validator \
   --commission-rate "0.1" \
   --min-self-delegation "1" \
   --pubkey  $(sged tendermint show-validator) \
-  --moniker STAVR_guide \
+  --moniker <moniker> \
   --chain-id sgenet-1 \
   --identity="" \
   --details="" \
@@ -188,13 +188,14 @@ mv /root/sge/build/sged /root/go/bin/sgetd
 
 sgetd init tarabukinivan --chain-id sge-network-4 --home $HOME/.sget
 sgetd config chain-id sge-network-4 --home $HOME/.sget
+```
 Create/recover wallet
+```
 sgetd keys add sgetwallet --home $HOME/.sget
 ```
 Download Genesis
 ```
 wget -O $HOME/.sget/config/genesis.json "https://raw.githubusercontent.com/obajay/nodes-Guides/main/Projects/SGE/Testnet/genesis.json"
-
 ```
 Set up the minimum gas price and Peers/Seeds/Filter peers/MaxPeers
 ```
@@ -229,6 +230,10 @@ Download addrbook
 ```
 wget -O $HOME/.sget/config/addrbook.json "https://raw.githubusercontent.com/obajay/nodes-Guides/main/Projects/SGE/Testnet/addrbook.json"
 ```
+Change ports
+```
+https://github.com/tarabukinivan/change_cosmos_ports
+```
 StateSync
 ```
 SNAP_RPC="https://rpc-t.sge.nodestake.top:443"
@@ -246,7 +251,6 @@ s|^(trust_height[[:space:]]+=[[:space:]]+).*$|\1$BLOCK_HEIGHT| ; \
 s|^(trust_hash[[:space:]]+=[[:space:]]+).*$|\1\"$TRUST_HASH\"| ; \
 s|^(seeds[[:space:]]+=[[:space:]]+).*$|\1\"\"|" $HOME/.sget/config/config.toml
 sgetd tendermint unsafe-reset-all --home /root/.sget --keep-addr-book
-
 ```
 
 Create a service file
@@ -279,17 +283,17 @@ sgetd tx staking create-validator \
   --chain-id "sge-network-4" \
   --home "$HOME/.sget" \
   --amount 1000000usge \
-  --from "sgetwallet" \
+  --from "<wallet>" \
   --commission-max-change-rate "0.1" \
   --commission-max-rate "0.2" \
   --commission-rate "0.1" \
   --min-self-delegation "1" \
   --pubkey  $(sgetd tendermint show-validator) \
-  --moniker tarabukinivan \
-  --identity="8D318C5F1707F819" \
-  --details="https://github.com/ajtaltarabukin2022/sge-testnet" \
+  --moniker <moniker> \
+  --identity="" \
+  --details="" \
   --keyring-backend os \
-  --website="https://tarabukinivan.github.io/personal/" \
+  --website="" \
   --fees 0usge -y
 ```
 Delete node
@@ -321,10 +325,29 @@ sgetd query bank balances <wallet address> --chain-id sge-network-4 --home $HOME
 ```
 delegate
 ```
-sgetd tx staking delegate sgevaloper1rrtcd23gds5dt52yrweg0wyua0j8pcsxsadr5c 1000000usge --from sgetwallet --fees 0usge --home $HOME/.sget -y
+sgetd tx staking delegate <valoper> 1000000usge --from <wallet> --fees 0usge --home $HOME/.sget -y
 ```
 voiting
 ```
 sgetd tx gov vote 3 yes --from sgetwallet --chain-id sge-network-4 --fees 0usge --home $HOME/.sget -y
 ```
+Config check
+```
+sgetd config --home $HOME/.sget
+{
+        "chain-id": "sge-network-4",
+        "keyring-backend": "os",
+        "output": "text",
+        "node": "tcp://localhost:61057",
+        "broadcast-mode": "sync"
+}
+sged config --home $HOME/.sge
+{
+        "chain-id": "sgenet-1",
+        "keyring-backend": "os",
+        "output": "text",
+        "node": "tcp://localhost:60957",
+        "broadcast-mode": "sync"
+}
 
+```
