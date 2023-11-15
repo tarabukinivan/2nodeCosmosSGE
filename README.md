@@ -98,7 +98,10 @@ s|^(seeds[[:space:]]+=[[:space:]]+).*$|\1\"\"|" $HOME/.sge/config/config.toml
 sged tendermint unsafe-reset-all --home /root/.sge --keep-addr-book
 systemctl restart sged && journalctl -u sged -f -o cat
 ```
-
+Change ports
+```
+https://github.com/tarabukinivan/change_cosmos_ports
+```
 Create a service file
 ```
 sudo tee /etc/systemd/system/sged.service > /dev/null <<EOF
@@ -166,7 +169,9 @@ Check Balance
 ```
 sged query bank balances sge1m8mhgf0x5kt4hn80dr2vxta0j8u082ga5ftsam
 ```
-delegate
+Delegate
 ```
 sged tx staking delegate <valoper> 1000000usge --from <wallet> --fees 0usge -y
 ```
+
+Testnet SGE
