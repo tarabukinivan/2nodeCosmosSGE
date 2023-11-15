@@ -1,6 +1,7 @@
-**SGE Mainnet + SGE Testnet**
-***SGE Mainnet***
+**SGE Mainnet + SGE Testnet** <br>
+***SGE Mainnet***<br>
 Preparing the server
+<br>
 ```
 sudo apt update && sudo apt upgrade -y
 sudo apt install curl tar wget clang pkg-config libssl-dev jq build-essential bsdmainutils git make ncdu gcc git jq chrony liblz4-tool -y
@@ -173,5 +174,157 @@ Delegate
 ```
 sged tx staking delegate <valoper> 1000000usge --from <wallet> --fees 0usge -y
 ```
+<br>
+***SGE Testnet***<br>
+```
+cd $HOME/sge
+git checkout v1.1.1
+make build
+or
+make --ignore-errors build
+sged version --long
 
-Testnet SGE
+mv /root/sge/build/sged /root/go/bin/sgetd
+
+sgetd init tarabukinivan --chain-id sge-network-4 --home $HOME/.sget
+sgetd config chain-id sge-network-4 --home $HOME/.sget
+Create/recover wallet
+sgetd keys add sgetwallet --home $HOME/.sget
+```
+Download Genesis
+```
+wget -O $HOME/.sget/config/genesis.json "https://raw.githubusercontent.com/obajay/nodes-Guides/main/Projects/SGE/Testnet/genesis.json"
+
+```
+Set up the minimum gas price and Peers/Seeds/Filter peers/MaxPeers
+```
+sed -i -e "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"0usge\"/" $HOME/.sget/config/app.toml
+sed -i -e "s/^filter_peers *=.*/filter_peers = \"true\"/" $HOME/.sget/config/config.toml
+external_address=$(wget -qO- eth0.me) 
+sed -i.bak -e "s/^external_address *=.*/external_address = \"$external_address:26656\"/" $HOME/.sget/config/config.toml
+peers="145d0f311ef1485f5b95eebecbc758fce01b4bb6@38.146.3.184:17756,6caabc35628a51bbf9c80ead303f13b3dfae8674@50.19.180.153:26656,51e4e7b04d2f669f5efa53e8d95891fa04e4c5b9@206.125.33.62:26656,2b4efc999c6aaad3cb2456fa5385f16f90e2c3d2@95.217.106.215:11156,31bda14eacbc1c1c537c4b7c2e8d338a06c8c5fd@57.128.37.47:26656,ef9ac611d9ca1c3a9fae22199f449d7c1082a0d9@65.108.233.109:17756"
+sed -i.bak -e "s/^persistent_peers *=.*/persistent_peers = \"$peers\"/" $HOME/.sget/config/config.toml
+seeds=""
+sed -i.bak -e "s/^seeds =.*/seeds = \"$seeds\"/" $HOME/.sget/config/config.toml
+sed -i 's/max_num_inbound_peers =.*/max_num_inbound_peers = 10/g' $HOME/.sget/config/config.toml
+sed -i 's/max_num_outbound_peers =.*/max_num_outbound_peers = 40/g' $HOME/.sget/config/config.toml
+```
+Pruning (optional)
+```
+pruning="custom" && \
+pruning_keep_recent="100" && \
+pruning_keep_every="0" && \
+pruning_interval="10" && \
+sed -i -e "s/^pruning *=.*/pruning = \"$pruning\"/" ~/.sget/config/app.toml && \
+sed -i -e "s/^pruning-keep-recent *=.*/pruning-keep-recent = \"$pruning_keep_recent\"/" ~/.sget/config/app.toml && \
+sed -i -e "s/^pruning-keep-every *=.*/pruning-keep-every = \"$pruning_keep_every\"/" ~/.sget/config/app.toml && \
+sed -i -e "s/^pruning-interval *=.*/pruning-interval = \"$pruning_interval\"/" ~/.sget/config/app.toml
+```
+Indexer (optional)
+```
+indexer="null" && \
+sed -i -e "s/^indexer *=.*/indexer = \"$indexer\"/" $HOME/.sget/config/config.toml
+```
+Download addrbook
+```
+wget -O $HOME/.sget/config/addrbook.json "https://raw.githubusercontent.com/obajay/nodes-Guides/main/Projects/SGE/Testnet/addrbook.json"
+```
+StateSync
+```
+SNAP_RPC="https://rpc-t.sge.nodestake.top:443"
+LATEST_HEIGHT=$(curl -s $SNAP_RPC/block | jq -r .result.block.header.height); \
+BLOCK_HEIGHT=$((LATEST_HEIGHT - 100)); \
+TRUST_HASH=$(curl -s "$SNAP_RPC/block?height=$BLOCK_HEIGHT" | jq -r .result.block_id.hash)
+
+echo $LATEST_HEIGHT $BLOCK_HEIGHT $TRUST_HASH
+
+SNAP_RPC="https://rpc-t.sge.nodestake.top:443,https://sge.rpc.t.stavr.tech:443"
+
+sed -i.bak -E "s|^(enable[[:space:]]+=[[:space:]]+).*$|\1true| ; \
+s|^(rpc_servers[[:space:]]+=[[:space:]]+).*$|\1\"$SNAP_RPC,$SNAP_RPC\"| ; \
+s|^(trust_height[[:space:]]+=[[:space:]]+).*$|\1$BLOCK_HEIGHT| ; \
+s|^(trust_hash[[:space:]]+=[[:space:]]+).*$|\1\"$TRUST_HASH\"| ; \
+s|^(seeds[[:space:]]+=[[:space:]]+).*$|\1\"\"|" $HOME/.sget/config/config.toml
+sgetd tendermint unsafe-reset-all --home /root/.sget --keep-addr-book
+
+```
+
+Create a service file
+```
+sudo tee /etc/systemd/system/sgetd.service > /dev/null <<EOF
+[Unit]
+Description=sge-testnet
+After=network-online.target
+
+[Service]
+User=$USER
+ExecStart=$(which sgetd) start --home $HOME/.sget
+Restart=on-failure
+RestartSec=3
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+Start
+```
+sudo systemctl daemon-reload
+sudo systemctl enable sgetd
+sudo systemctl restart sgetd && sudo journalctl -u sgetd -f -o cat
+```
+Create validator
+```
+sgetd tx staking create-validator \
+  --chain-id "sge-network-4" \
+  --home "$HOME/.sget" \
+  --amount 1000000usge \
+  --from "sgetwallet" \
+  --commission-max-change-rate "0.1" \
+  --commission-max-rate "0.2" \
+  --commission-rate "0.1" \
+  --min-self-delegation "1" \
+  --pubkey  $(sgetd tendermint show-validator) \
+  --moniker tarabukinivan \
+  --identity="8D318C5F1707F819" \
+  --details="https://github.com/ajtaltarabukin2022/sge-testnet" \
+  --keyring-backend os \
+  --website="https://tarabukinivan.github.io/personal/" \
+  --fees 0usge -y
+```
+Delete node
+```
+sudo systemctl stop sgetd
+sudo systemctl disable sgetd
+rm /etc/systemd/system/sgetd.service
+sudo systemctl daemon-reload
+cd $HOME
+rm -rf sge
+rm -rf .sget
+rm -rf $(which sgetd)
+```
+Sync Info
+```
+sgetd status 2>&1 | jq .SyncInfo
+```
+NodeINfo
+```
+sgetd status 2>&1 | jq .NodeInfo
+```
+Check node logs
+```
+sudo journalctl -u sgetd -f -o cat
+```
+Check Balance
+```
+sgetd query bank balances <wallet address> --chain-id sge-network-4 --home $HOME/.sget
+```
+delegate
+```
+sgetd tx staking delegate sgevaloper1rrtcd23gds5dt52yrweg0wyua0j8pcsxsadr5c 1000000usge --from sgetwallet --fees 0usge --home $HOME/.sget -y
+```
+voiting
+```
+sgetd tx gov vote 3 yes --from sgetwallet --chain-id sge-network-4 --fees 0usge --home $HOME/.sget -y
+```
+
