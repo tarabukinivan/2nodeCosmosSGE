@@ -46,7 +46,6 @@ Download Genesis
 ```
 wget -O $HOME/.sge/config/genesis.json "https://raw.githubusercontent.com/obajay/nodes-Guides/main/Projects/SGE/genesis.json"
 ```
-```
 Set up the minimum gas price and Peers/Seeds/Filter peers/MaxPeers
 ```
 sed -i -e "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"0usge\"/" $HOME/.sge/config/app.toml
