@@ -173,7 +173,7 @@ sged query bank balances sge1m8mhgf0x5kt4hn80dr2vxta0j8u082ga5ftsam
 Delegate
 ```
 sged tx staking delegate <valoper> 1000000usge --from <wallet> --fees 0usge -y
-```
+
 <br>
 ***SGE Testnet***<br>
 ```
