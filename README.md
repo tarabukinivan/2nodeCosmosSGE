@@ -192,6 +192,7 @@ sgetd config chain-id sge-network-4 --home $HOME/.sget
 Create/recover wallet
 ```
 sgetd keys add sgetwallet --home $HOME/.sget
+sgetd keys add sgetnewwallet --home $HOME/.sget
 ```
 Download Genesis
 ```
@@ -288,7 +289,7 @@ sgetd tx staking create-validator \
   --commission-max-rate "0.2" \
   --commission-rate "0.1" \
   --min-self-delegation "1" \
-  --pubkey  $(sgetd tendermint show-validator) \
+  --pubkey  $(sgetd tendermint show-validator --home $HOME/.sget) \
   --moniker <moniker> \
   --identity="" \
   --details="" \
@@ -323,6 +324,10 @@ Check Balance
 ```
 sgetd query bank balances <wallet address> --chain-id sge-network-4 --home $HOME/.sget
 ```
+send
+```
+sgetd tx bank send --home $HOME/.sget sge1rrtcd23gds5dt52yrweg0wyua0j8pcsx28de39 sge1m5sf3rz0g8t0yx69udsj6jxl5dys33kf444zmy 1990000usge --fees 0usge -y
+```
 delegate
 ```
 sgetd tx staking delegate <valoper> 1000000usge --from <wallet> --fees 0usge --home $HOME/.sget -y
@@ -330,6 +335,10 @@ sgetd tx staking delegate <valoper> 1000000usge --from <wallet> --fees 0usge --h
 voiting
 ```
 sgetd tx gov vote 3 yes --from sgetwallet --chain-id sge-network-4 --fees 0usge --home $HOME/.sget -y
+```
+unjail
+```
+sgetd tx slashing unjail --chain-id sge-network-4 --from sgetwallet --fees 0usge --home $HOME/.sget -y
 ```
 Config check
 ```
