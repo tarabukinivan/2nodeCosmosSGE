@@ -280,9 +280,20 @@ sudo systemctl restart sgetd && sudo journalctl -u sgetd -f -o cat
 ```
 Create validator
 ```
-sgetd tx staking create-validator \
-  --chain-id "sge-network-4" \
-  --home "$HOME/.sget" \
+sged tx staking create-validator \
+  --amount 1000000usge \
+  --from <wallet> \
+  --commission-max-change-rate "0.1" \
+  --commission-max-rate "0.2" \
+  --commission-rate "0.1" \
+  --min-self-delegation "1" \
+  --pubkey  $(sgetd tendermint show-validator --home $HOME/.sget) \
+  --moniker <moniker> \
+  --chain-id sge-network-4 \
+  --identity="" \
+  --home $HOME/.sget -y
+
+
   --amount 1000000usge \
   --from "<wallet>" \
   --commission-max-change-rate "0.1" \
