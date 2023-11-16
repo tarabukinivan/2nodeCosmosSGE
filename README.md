@@ -343,6 +343,18 @@ delegate
 ```
 sgetd tx staking delegate <valoper> 1000000usge --from <wallet> --fees 0usge --home $HOME/.sget -y
 ```
+redelegate
+```
+sgetd tx staking redelegate sgevaloper1rrtcd23gds5dt52yrweg0wyua0j8pcsxsadr5c sgevaloper1m5sf3rz0g8t0yx69udsj6jxl5dys33kf004c7e 70990200usge --from sgetwallet --fees 0usge --home $HOME/.sget -y
+```
+unbond
+```
+sgetd tx staking unbond sgevaloper1rrtcd23gds5dt52yrweg0wyua0j8pcsxsadr5c 87990200usge --from sgetwallet --fees 0usge --home $HOME/.sget -y
+```
+validator info
+```
+sgetd query staking validator sgevaloper1rrtcd23gds5dt52yrweg0wyua0j8pcsxsadr5c
+```
 voiting
 ```
 sgetd tx gov vote 3 yes --from sgetwallet --chain-id sge-network-4 --fees 0usge --home $HOME/.sget -y
