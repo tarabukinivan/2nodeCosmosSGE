@@ -363,6 +363,15 @@ unjail
 ```
 sgetd tx slashing unjail --chain-id sge-network-4 --from sgetwallet --fees 0usge --home $HOME/.sget -y
 ```
+Update
+```
+cd $HOME/sge && git pull
+git checkout v1.2.0
+make --ignore-errors build
+mv /root/sge/build/sged /root/go/bin/sgetd
+
+sgetd status --home $HOME/.sget 2>&1 | jq .SyncInfo
+```
 Config check
 ```
 sgetd config --home $HOME/.sget
